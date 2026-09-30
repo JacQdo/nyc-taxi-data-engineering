@@ -1,0 +1,51 @@
+version: 2
+
+models:
+
+  - name: daily_trips
+    description: "Agrégations quotidiennes des trajets nettoyés."
+    columns:
+      - name: pickup_date
+        tests:
+          - not_null
+          - unique
+
+      - name: trip_count
+        tests:
+          - not_null
+
+      - name: total_revenue
+        tests:
+          - not_null
+
+  - name: hourly_patterns
+    description: "Agrégations des trajets par heure de prise en charge."
+    columns:
+      - name: pickup_hour
+        tests:
+          - not_null
+          - unique
+
+      - name: trip_count
+        tests:
+          - not_null
+
+      - name: total_revenue
+        tests:
+          - not_null
+
+  - name: zone_analysis
+    description: "Analyse des trajets par zone de prise en charge."
+    columns:
+      - name: pickup_location_id
+        tests:
+          - not_null
+          - unique
+
+      - name: trip_count
+        tests:
+          - not_null
+
+      - name: total_revenue
+        tests:
+          - not_null

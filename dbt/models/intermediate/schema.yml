@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: int_clean_trips
+    description: "Trajets nettoyés et filtrés à partir de stg_yellow_taxi."
+
+    columns:
+      - name: pickup_datetime
+        tests:
+          - not_null
+
+      - name: dropoff_datetime
+        tests:
+          - not_null
+
+      - name: pickup_location_id
+        tests:
+          - not_null
+
+      - name: dropoff_location_id
+        tests:
+          - not_null
+
+      - name: trip_distance
+        tests:
+          - not_null
+          - non_negative
+
+      - name: total_amount
+        tests:
+          - not_null
+          - non_negative

@@ -1,0 +1,6 @@
+﻿dbt-core==1.12.5
+dbt-snowflake==1.12.1
+snowflake-connector-python==4.7.5
+duckdb==1.5.6
+pandas
+pyarrow
