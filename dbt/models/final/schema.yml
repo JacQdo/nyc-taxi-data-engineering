@@ -3,9 +3,11 @@ version: 2
 models:
 
   - name: daily_trips
-    description: "Agrégations quotidiennes des trajets nettoyés."
+    description: "Analyse quotidienne des trajets Yellow Taxi."
+
     columns:
       - name: pickup_date
+        description: "Date de prise en charge."
         tests:
           - not_null
           - unique
@@ -17,14 +19,41 @@ models:
       - name: total_revenue
         tests:
           - not_null
+
+      - name: avg_speed_kmh
+        tests:
+          - not_null
+
+      - name: avg_tip_rate
+        tests:
+          - not_null
+
 
   - name: hourly_patterns
-    description: "Agrégations des trajets par heure de prise en charge."
+    description: "Analyse des trajets par heure, période de la journée et type de jour."
+
+    tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns:
+              - pickup_hour
+              - day_type
+
     columns:
       - name: pickup_hour
+        description: "Heure de prise en charge, de 0 à 23."
         tests:
           - not_null
-          - unique
+
+      - name: time_period
+        description: "Période de la journée : Nuit, Matin, Après-midi ou Soirée."
+        tests:
+          - not_null
+
+      - name: day_type
+        description: "Type de jour : Weekday ou Weekend."
+        tests:
+          - not_null
 
       - name: trip_count
         tests:
@@ -33,19 +62,49 @@ models:
       - name: total_revenue
         tests:
           - not_null
+
+      - name: avg_speed_kmh
+        tests:
+          - not_null
+
+      - name: avg_tip_rate
+        tests:
+          - not_null
+
 
   - name: zone_analysis
-    description: "Analyse des trajets par zone de prise en charge."
+    description: "Analyse des trajets par zone de départ et catégorie de distance."
+
+    tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns:
+              - pickup_location_id
+              - distance_category
+
     columns:
       - name: pickup_location_id
+        description: "Identifiant de la zone de départ."
         tests:
           - not_null
-          - unique
+
+      - name: distance_category
+        description: "Catégorie de distance : 0-2 km, 2-5 km, 5-10 km ou 10+ km."
+        tests:
+          - not_null
 
       - name: trip_count
         tests:
           - not_null
 
       - name: total_revenue
+        tests:
+          - not_null
+
+      - name: avg_speed_kmh
+        tests:
+          - not_null
+
+      - name: avg_tip_rate
         tests:
           - not_null
