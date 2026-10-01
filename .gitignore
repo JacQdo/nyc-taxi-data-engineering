@@ -19,6 +19,7 @@ logs/
 # Données brutes / volumineuses
 data/raw/
 readme_Long.md
+README_long2.md
 
 # Fichiers temporaires
 *.tmp

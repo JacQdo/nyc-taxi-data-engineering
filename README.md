@@ -1,246 +1,376 @@
-# 🚕 NYC Taxi Data Engineering
+# NYC Taxi Data Engineering
 
-Projet de **Data Engineering** réalisé à partir des données **NYC Yellow Taxi** sur la période **2022–2024**.
+Pipeline Data Engineering complet construit autour de données NYC Yellow Taxi 2022–2024.
 
-L'objectif est de construire une chaîne de traitement de données complète, structurée et reproductible, depuis l'ingestion des fichiers Parquet jusqu'à la production de modèles analytiques dans Snowflake.
+Le projet met en œuvre une architecture **Python + Snowflake + dbt**, avec séparation des couches RAW, STAGING, INTERMEDIATE et FINAL, règles de qualité, enrichissements analytiques et tests automatisés.
 
-Le projet met en œuvre une architecture en couches :
+## Objectifs
 
-```text
-RAW → STAGING → INTERMEDIATE → FINAL
-```
+* Ingérer des données Parquet volumineuses dans Snowflake.
+* Conserver une couche RAW exploitable.
+* Standardiser et typer les données avec dbt.
+* Identifier et filtrer les anomalies de qualité.
+* Enrichir les trajets avec des indicateurs analytiques.
+* Construire plusieurs modèles métiers dans la couche FINAL.
+* Automatiser les contrôles de qualité avec les tests dbt.
+* Produire une base exploitable pour du reporting et de la BI.
 
-avec **Python** pour l'ingestion, **Snowflake** pour le stockage et **dbt** pour les transformations et les contrôles de qualité.
-
----
-
-## 📌 1. Objectifs du projet
-
-Le projet répond à quatre objectifs principaux.
-
-### 1. Ingestion
-
-* Importer les fichiers Parquet NYC Yellow Taxi 2022, 2023 et 2024.
-* Charger les données dans Snowflake.
-* Conserver les données originales dans une couche RAW.
-* Éviter les rechargements inutiles des fichiers déjà traités.
-
-### 2. Transformation
-
-* Standardiser les noms de colonnes.
-* Créer les dimensions temporelles nécessaires à l'analyse.
-* Calculer la durée des trajets.
-* Appliquer des règles de nettoyage métier.
-
-### 3. Data Quality
-
-* Identifier les anomalies présentes dans les données.
-* Conserver les anomalies dans RAW afin de préserver les données sources.
-* Appliquer les règles de qualité dans la couche INTERMEDIATE.
-* Mettre en place des tests automatisés avec dbt.
-
-### 4. Analyse
-
-Produire trois modèles analytiques :
-
-* analyse quotidienne ;
-* analyse horaire ;
-* analyse par zone de pickup.
-
----
-
-# 🏗️ 2. Architecture du projet
+## Architecture
 
 ```text
-                    ┌──────────────────────────┐
-                    │      Fichiers Parquet    │
-                    │    NYC Yellow Taxi       │
-                    │        2022–2024         │
-                    └────────────┬─────────────┘
-                                 │
-                                 ▼
-                    ┌──────────────────────────┐
-                    │          Python          │
-                    │        Ingestion         │
-                    └────────────┬─────────────┘
-                                 │
-                                 ▼
-                    ┌──────────────────────────┐
-                    │        Snowflake         │
-                    │           RAW            │
-                    │       YELLOW_TRIPS       │
-                    └────────────┬─────────────┘
-                                 │
-                                 ▼
-                    ┌──────────────────────────┐
-                    │           dbt            │
-                    │         STAGING          │
-                    │    STG_YELLOW_TAXI       │
-                    └────────────┬─────────────┘
-                                 │
-                                 ▼
-                    ┌──────────────────────────┐
-                    │           dbt            │
-                    │       INTERMEDIATE       │
-                    │      INT_CLEAN_TRIPS     │
-                    └────────────┬─────────────┘
-                                 │
-                 ┌───────────────┼───────────────┐
-                 ▼               ▼               ▼
-        ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
-        │  DAILY_TRIPS   │ │HOURLY_PATTERNS │ │ ZONE_ANALYSIS  │
-        └────────────────┘ └────────────────┘ └────────────────┘
-                 │               │               │
-                 └───────────────┼───────────────┘
-                                 ▼
-                    ┌──────────────────────────┐
-                    │      Data Quality        │
-                    │       dbt tests          │
-                    └──────────────────────────┘
+Parquet 2022–2024
+       │
+       ▼
+Python / ingestion
+       │
+       ▼
+Snowflake Internal Stage
+       │
+       ▼
+RAW.YELLOW_TRIPS
+       │
+       ▼
+STAGING.STG_YELLOW_TAXI
+       │
+       ▼
+INTERMEDIATE.INT_CLEAN_TRIPS
+       │
+       ├──────────────► FINAL.DAILY_TRIPS
+       │
+       ├──────────────► FINAL.HOURLY_PATTERNS
+       │
+       └──────────────► FINAL.ZONE_ANALYSIS
 ```
 
-### Principe de séparation des responsabilités
+### Séparation des responsabilités
 
-| Composant        | Responsabilité                    |
-| ---------------- | --------------------------------- |
-| Python           | Ingestion des fichiers            |
-| Snowflake RAW    | Conservation des données sources  |
-| dbt STAGING      | Standardisation et préparation    |
-| dbt INTERMEDIATE | Nettoyage et règles métier        |
-| dbt FINAL        | Agrégations analytiques           |
-| dbt tests        | Contrôle automatisé de la qualité |
+| Composant  | Responsabilité                    |
+| ---------- | --------------------------------- |
+| Python     | ingestion et chargement           |
+| Snowflake  | stockage et exécution SQL         |
+| dbt        | transformations, modèles et tests |
+| DuckDB     | contrôles exploratoires locaux    |
+| Git/GitHub | versionnement du code             |
 
----
+## Données
 
-# 📂 3. Sources de données
+Le projet exploite 36 fichiers Parquet correspondant aux années 2022, 2023 et 2024.
 
-Les données utilisées sont les fichiers **NYC Yellow Taxi** au format Parquet.
+### Volume local
 
-### Période
+* 36 fichiers Parquet
+* environ 1,81 Go compressés
+* 119 136 044 lignes identifiées avec DuckDB
+
+### Volume chargé dans Snowflake
+
+* 100 319 438 lignes dans RAW
+* 100 318 800 lignes appartenant à la période cible 2022–2024
+* 638 lignes présentant une date de pickup hors période cible
+
+La différence entre le volume local et le volume chargé dans Snowflake constitue un point de contrôle identifié dans le projet et n'est pas présentée comme une parité parfaite entre les deux environnements.
+
+## Couche RAW
+
+Les fichiers sont chargés dans Snowflake via un **Internal Stage**.
 
 ```text
-2022
-2023
-2024
+Parquet
+   ↓
+PUT
+   ↓
+Internal Stage
+   ↓
+COPY INTO
+   ↓
+RAW.YELLOW_TRIPS
 ```
 
-### Organisation des données
+La couche RAW constitue la source des transformations dbt.
+
+## STAGING
+
+Le modèle :
 
 ```text
-data/
-└── raw/
-    └── yellow_taxi/
-        ├── 2022/
-        ├── 2023/
-        └── 2024/
+STAGING.STG_YELLOW_TAXI
 ```
 
-Le projet utilise :
+standardise notamment les noms de colonnes et ajoute plusieurs attributs temporels :
 
-* **36 fichiers Parquet**
-* **12 fichiers par année**
-* environ **1,81 GB** de données compressées
+* date de pickup ;
+* année ;
+* mois ;
+* jour ;
+* heure ;
+* jour de la semaine ;
+* durée du trajet.
 
-### Volume approximatif
+## Nettoyage
 
-| Année     |       Volume |
-| --------- | -----------: |
-| 2022      |     ~0,57 GB |
-| 2023      |     ~0,59 GB |
-| 2024      |     ~0,65 GB |
-| **Total** | **~1,81 GB** |
-
----
-
-# 🐍 4. Ingestion avec Python
-
-L'ingestion est réalisée avec :
+Le modèle :
 
 ```text
-ingestion/load_to_snowflake.py
+INTERMEDIATE.INT_CLEAN_TRIPS
 ```
 
-Le script réalise les opérations suivantes :
+applique les principales règles de qualité :
 
-1. parcours des fichiers Parquet ;
-2. préparation du chargement ;
-3. dépôt des fichiers dans un stage Snowflake ;
-4. chargement avec `COPY INTO` ;
-5. conversion explicite des timestamps ;
-6. chargement dans la table RAW ;
-7. ciblage du fichier traité afin d'éviter les rechargements inutiles.
+* période 2022–2024 ;
+* dropoff >= pickup ;
+* nombre de passagers positif lorsqu'il est renseigné ;
+* distance <= 200 km ;
+* montants non négatifs ;
+* durée comprise entre 0 et 1 440 minutes.
 
-### Ressources Snowflake utilisées
-
-Table RAW :
+### Résultat du nettoyage
 
 ```text
-NYC_TAXI.RAW.YELLOW_TRIPS
+Lignes initiales       100 319 438
+Lignes conservées       97 643 478
+Lignes rejetées          2 675 960
+
+Taux de conservation       97,33 %
+Taux de rejet                2,67 %
 ```
 
-Stage :
+Les valeurs manquantes de `passenger_count` sont conservées et documentées plutôt que remplacées artificiellement.
+
+## Enrichissements
+
+`int_clean_trips` ajoute :
+
+* `speed_kmh`
+* `tip_rate`
+* `distance_category`
+* `time_period`
+* `day_type`
+
+### Catégories de distance
+
+| Catégorie | Nombre de trajets |
+| --------- | ----------------: |
+| 0–2 km    |        52 727 033 |
+| 2–5 km    |        27 998 031 |
+| 5–10 km   |         8 755 384 |
+| 10+ km    |         8 163 030 |
+
+Des seuils analytiques sont également appliqués aux indicateurs dérivés :
+
+* vitesse maximale analytique : 120 km/h ;
+* taux de pourboire maximal analytique : 100 %.
+
+## Modèles FINAL
+
+### `daily_trips`
+
+Grain : **un jour**
+
+920 lignes.
+
+Principaux indicateurs :
+
+* nombre de trajets ;
+* chiffre d'affaires ;
+* distance ;
+* durée ;
+* vitesse ;
+* taux de pourboire ;
+* passagers.
+
+### `hourly_patterns`
+
+Grain : **heure × type de jour**
+
+48 lignes.
+
+Permet d'analyser les comportements selon :
+
+* l'heure ;
+* la période de la journée ;
+* Weekday / Weekend ;
+* le volume ;
+* le chiffre d'affaires ;
+* la vitesse ;
+* le pourboire.
+
+### `zone_analysis`
+
+Grain : **zone de départ × catégorie de distance**
+
+1 048 lignes.
+
+Permet d'étudier :
+
+* les zones de départ ;
+* les distances ;
+* les destinations distinctes ;
+* le chiffre d'affaires ;
+* la durée ;
+* la vitesse ;
+* le taux de pourboire.
+
+## Tests dbt
+
+Les trois modèles finaux disposent de tests de qualité.
+
+Dernière exécution :
 
 ```text
-NYC_TAXI.RAW.YELLOW_TAXI_STAGE
+22 tests
+22 PASS
+0 WARN
+0 ERROR
 ```
 
-Format Parquet :
+Les tests comprennent notamment :
+
+* `not_null`
+* `unique`
+* `unique_combination`
+* contrôles de mesures finales.
+
+Les grains analytiques sont contrôlés par des tests d'unicité composite :
 
 ```text
-NYC_TAXI.RAW.PARQUET_FORMAT
+hourly_patterns
+pickup_hour + day_type
 ```
-
----
-
-# ❄️ 5. Snowflake
-
-## Database
 
 ```text
-NYC_TAXI
+zone_analysis
+pickup_location_id + distance_category
 ```
 
-## Warehouse
+## Documentation dbt
+
+La documentation et le catalogue peuvent être générés avec :
+
+```powershell
+.\.venv\Scripts\dbt.exe docs generate `
+  --project-dir .\dbt `
+  --profiles-dir "$HOME\.dbt"
+```
+
+## Installation
+
+Créer l'environnement Python :
+
+```powershell
+python -m venv .venv
+```
+
+Activer l'environnement :
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Installer les dépendances :
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+## Configuration Snowflake
+
+Le mot de passe Snowflake n'est pas stocké dans Git.
+
+Le profil dbt utilise une variable d'environnement :
+
+```yaml
+password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+```
+
+Dans PowerShell :
+
+```powershell
+$env:SNOWFLAKE_PASSWORD = Read-Host "Mot de passe Snowflake"
+```
+
+## Commandes dbt principales
+
+Vérifier la configuration :
+
+```powershell
+.\.venv\Scripts\dbt.exe debug `
+  --project-dir .\dbt `
+  --profiles-dir "$HOME\.dbt"
+```
+
+Lister les modèles :
+
+```powershell
+.\.venv\Scripts\dbt.exe ls `
+  --project-dir .\dbt `
+  --profiles-dir "$HOME\.dbt"
+```
+
+Construire les modèles :
+
+```powershell
+.\.venv\Scripts\dbt.exe run `
+  --project-dir .\dbt `
+  --profiles-dir "$HOME\.dbt"
+```
+
+Tester les modèles finaux :
+
+```powershell
+.\.venv\Scripts\dbt.exe test `
+  --select daily_trips hourly_patterns zone_analysis `
+  --project-dir .\dbt `
+  --profiles-dir "$HOME\.dbt"
+```
+
+## Structure du projet
 
 ```text
-NYC_TAXI_WH
+nyc-taxi-data-engineering/
+│
+├── data/
+│   ├── raw/
+│   └── profiling/
+│
+├── ingestion/
+│   └── load_to_snowflake.py
+│
+├── dbt/
+│   ├── models/
+│   │   ├── staging/
+│   │   ├── intermediate/
+│   │   └── final/
+│   │
+│   ├── macros/
+│   ├── tests/
+│   ├── dbt_project.yml
+│   └── packages.yml
+│
+├── .github/
+│   └── workflows/
+│
+├── requirements.txt
+├── .gitignore
+└── README.md
 ```
 
-Configuration :
+## Compétences mobilisées
 
-```text
-Warehouse size : X-SMALL
-Auto suspend   : 60 secondes
-Auto resume    : TRUE
-```
+* Python
+* SQL
+* Snowflake
+* dbt Core
+* DuckDB
+* Parquet
+* Data Quality
+* Data Warehouse
+* modélisation analytique
+* Git / GitHub
+* PowerShell
+* tests automatisés
 
-## Schémas
+## Conclusion
 
-```text
-RAW
-STAGING
-INTERMEDIATE
-FINAL
-```
+Ce projet reproduit un scénario proche d'un contexte professionnel de Data Engineering : ingestion de données volumineuses, stockage dans un Data Warehouse, transformation par couches, traitement des problèmes de qualité, production de modèles analytiques et validation automatisée.
 
-Cette séparation permet d'isoler les différentes étapes du traitement.
-
----
-
-# 🗄️ 6. Couche RAW
-
-La couche RAW constitue le point d'entrée des données dans
-
-
-Ces tests contrôlnte exactement
-
-📅 pickup entre 2022 et 2024
-⏱️ dropoff ≥ pickup
-👥 passenger_count > 0 lorsqu'il n'est pas NULL
-📏 distance ≤ 200 miles
-💰 total_amount ≥ 0
-💵 fare_amount ≥ 0
-💵 tip_amount ≥ 0
-🛣️ tolls_amount ≥ 0
-⏱️ durée ≥ 0
-⏱️ durée ≤ 1 440 minutes (24 h)
+Le pipeline constitue une base exploitable pour alimenter ensuite un outil de BI ou un système de reporting.
