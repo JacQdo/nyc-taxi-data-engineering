@@ -1,0 +1,74 @@
+<mxfile host="app.diagrams.net" modified="2026-10-02T08:40:00.000Z" agent="ChatGPT" version="24.7.17">
+  <diagram id="nyc-taxi-architecture" name="Architecture NYC Taxi">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="NYC Taxi — Architecture Data Engineering" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="510" y="30" width="580" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="source" value="DONNÉES SOURCES&lt;br&gt;&lt;b&gt;Parquet Yellow Taxi&lt;/b&gt;&lt;br&gt;2022 • 2023 • 2024&lt;br&gt;36 fichiers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4F7FA;strokeColor=#2C66AD;strokeWidth=2;fontSize=16;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="70" y="300" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="python" value="INGESTION&lt;br&gt;&lt;b&gt;Python&lt;/b&gt;&lt;br&gt;PUT → COPY INTO&lt;br&gt;Contrôles de chargement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F2FA;strokeColor=#2C66AD;strokeWidth=2;fontSize=16;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="370" y="300" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="stage" value="SNOWFLAKE&lt;br&gt;&lt;b&gt;Internal Stage&lt;/b&gt;&lt;br&gt;YELLOW_TAXI_STAGE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF5F0;strokeColor=#37875F;strokeWidth=2;fontSize=16;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="670" y="160" width="220" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="raw" value="RAW&lt;br&gt;&lt;b&gt;YELLOW_TRIPS&lt;/b&gt;&lt;br&gt;100,319,438 lignes&lt;br&gt;Données chargées avant dbt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF5F0;strokeColor=#37875F;strokeWidth=3;fontSize=16;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="670" y="310" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="dbt" value="DBT CORE&lt;br&gt;&lt;b&gt;Transformation + Tests&lt;/b&gt;&lt;br&gt;SQL • Macros • Documentation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF6E8;strokeColor=#DC8737;strokeWidth=2;fontSize=16;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="970" y="300" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="staging" value="STAGING&lt;br&gt;&lt;b&gt;stg_yellow_taxi&lt;/b&gt;&lt;br&gt;Renommage • Typage&lt;br&gt;Variables temporelles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF6E8;strokeColor=#DC8737;strokeWidth=2;fontSize=14;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="145" width="240" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="intermediate" value="INTERMEDIATE&lt;br&gt;&lt;b&gt;int_clean_trips&lt;/b&gt;&lt;br&gt;Nettoyage • Qualité&lt;br&gt;Durée • Vitesse • Tip rate&lt;br&gt;Catégorisations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF6E8;strokeColor=#DC8737;strokeWidth=2;fontSize=14;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="285" width="240" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="final" value="FINAL — MARTS ANALYTIQUES" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EBEEF8;strokeColor=#2C66AD;strokeWidth=3;fontSize=16;fontStyle=1;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="460" width="240" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="daily" value="daily_trips&lt;br&gt;920 lignes&lt;br&gt;Grain : date" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4F7FA;strokeColor=#2C66AD;fontSize=13;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="590" width="200" height="85" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="hourly" value="hourly_patterns&lt;br&gt;48 lignes&lt;br&gt;Grain : heure × jour" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4F7FA;strokeColor=#37875F;fontSize=13;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="590" width="200" height="85" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="zone" value="zone_analysis&lt;br&gt;1 048 lignes&lt;br&gt;Grain : zone × distance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4F7FA;strokeColor=#DC8737;fontSize=13;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="1165" y="710" width="200" height="85" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="tests" value="QUALITÉ DBT&lt;br&gt;&lt;b&gt;22 / 22 tests PASS&lt;/b&gt;&lt;br&gt;0 warning • 0 erreur" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF5EE;strokeColor=#37875F;strokeWidth=2;fontSize=15;fontColor=#142337;" vertex="1" parent="1">
+          <mxGeometry x="700" y="610" width="240" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="source" target="python"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="PUT / COPY INTO" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="python" target="stage"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="stage" target="raw"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="raw" target="dbt"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" value="ref()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="dbt" target="staging"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="staging" target="intermediate"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="intermediate" target="final"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="final" target="daily"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="final" target="hourly"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="final" target="zone"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" value="dbt test" style="dashed=1;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;strokeColor=#37875F;" edge="1" parent="1" source="dbt" target="tests"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,35 +1,43 @@
-{{
-    config(
-        materialized='table'
-    )
-}}
+{{ config(
+    materialized='table',
+    schema='FINAL'
+) }}
 
 SELECT
-    pickup_hour,
-    time_period,
-    day_type,
+    PICKUP_HOUR,
 
-    COUNT(*) AS trip_count,
+    TIME_PERIOD,
 
-    SUM(trip_distance) AS total_distance,
-    AVG(trip_distance) AS avg_trip_distance,
+    DAY_TYPE,
 
-    SUM(total_amount) AS total_revenue,
-    AVG(total_amount) AS avg_trip_amount,
+    COUNT(*) AS TRIP_COUNT,
 
-    AVG(trip_duration_minutes) AS avg_trip_duration_minutes,
-    AVG(speed_kmh) AS avg_speed_kmh,
-    AVG(tip_rate) AS avg_tip_rate,
+    SUM(TRIP_DISTANCE) AS TOTAL_DISTANCE,
 
-    SUM(passenger_count) AS total_passengers
+    AVG(TRIP_DISTANCE)
+        AS AVG_TRIP_DISTANCE,
+
+    SUM(TOTAL_AMOUNT)
+        AS TOTAL_REVENUE,
+
+    AVG(TOTAL_AMOUNT)
+        AS AVG_TRIP_AMOUNT,
+
+    AVG(TRIP_DURATION_MINUTES)
+        AS AVG_TRIP_DURATION_MINUTES,
+
+    AVG(SPEED_KMH)
+        AS AVG_SPEED_KMH,
+
+    AVG(TIP_RATE)
+        AS AVG_TIP_RATE,
+
+    SUM(PASSENGER_COUNT)
+        AS TOTAL_PASSENGERS
 
 FROM {{ ref('int_clean_trips') }}
 
 GROUP BY
-    pickup_hour,
-    time_period,
-    day_type
-
-ORDER BY
-    pickup_hour,
-    day_type
+    PICKUP_HOUR,
+    TIME_PERIOD,
+    DAY_TYPE

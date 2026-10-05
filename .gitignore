@@ -31,3 +31,10 @@ Thumbs.db
 .vscode/
 
 dbt/profiles.yml
+
+# Streamlit secrets
+streamlit_app/.streamlit/secrets.toml
+
+# Fichiers locaux / temporaires
+README.OLDmd
+docs/.~lock.soutenance_nyc_taxi_data_engineering.pdf#

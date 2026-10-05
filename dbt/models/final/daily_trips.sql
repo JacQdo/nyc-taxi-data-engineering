@@ -1,28 +1,34 @@
-{{
-    config(
-        materialized='table'
-    )
-}}
+{{ config(
+    materialized='table',
+    schema='FINAL'
+) }}
 
 SELECT
-    pickup_date,
+    PICKUP_DATE,
 
-    COUNT(*) AS trip_count,
+    COUNT(*) AS TRIP_COUNT,
 
-    SUM(trip_distance) AS total_distance,
-    AVG(trip_distance) AS avg_trip_distance,
+    SUM(TRIP_DISTANCE) AS TOTAL_DISTANCE,
 
-    SUM(total_amount) AS total_revenue,
-    AVG(total_amount) AS avg_trip_amount,
+    AVG(TRIP_DISTANCE) AS AVG_TRIP_DISTANCE,
 
-    AVG(trip_duration_minutes) AS avg_trip_duration_minutes,
-    AVG(speed_kmh) AS avg_speed_kmh,
-    AVG(tip_rate) AS avg_tip_rate,
+    SUM(TOTAL_AMOUNT) AS TOTAL_REVENUE,
 
-    SUM(passenger_count) AS total_passengers
+    AVG(TOTAL_AMOUNT) AS AVG_TRIP_AMOUNT,
+
+    AVG(TRIP_DURATION_MINUTES)
+        AS AVG_TRIP_DURATION_MINUTES,
+
+    AVG(SPEED_KMH)
+        AS AVG_SPEED_KMH,
+
+    AVG(TIP_RATE)
+        AS AVG_TIP_RATE,
+
+    SUM(PASSENGER_COUNT)
+        AS TOTAL_PASSENGERS
 
 FROM {{ ref('int_clean_trips') }}
 
-GROUP BY pickup_date
-
-ORDER BY pickup_date
+GROUP BY
+    PICKUP_DATE

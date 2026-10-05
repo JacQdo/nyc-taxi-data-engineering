@@ -1,34 +1,44 @@
-{{
-    config(
-        materialized='table'
-    )
-}}
+{{ config(
+    materialized='table',
+    schema='FINAL'
+) }}
 
 SELECT
-    pickup_location_id,
-    distance_category,
+    PICKUP_LOCATION_ID,
 
-    COUNT(*) AS trip_count,
-    COUNT(DISTINCT dropoff_location_id) AS distinct_dropoff_zones,
+    DISTANCE_CATEGORY,
 
-    SUM(trip_distance) AS total_distance,
-    AVG(trip_distance) AS avg_trip_distance,
+    COUNT(*) AS TRIP_COUNT,
 
-    SUM(total_amount) AS total_revenue,
-    AVG(total_amount) AS avg_trip_amount,
+    COUNT(DISTINCT DROPOFF_LOCATION_ID)
+        AS DISTINCT_DROPOFF_ZONES,
 
-    AVG(trip_duration_minutes) AS avg_trip_duration_minutes,
-    AVG(speed_kmh) AS avg_speed_kmh,
-    AVG(tip_rate) AS avg_tip_rate,
+    SUM(TRIP_DISTANCE)
+        AS TOTAL_DISTANCE,
 
-    SUM(passenger_count) AS total_passengers
+    AVG(TRIP_DISTANCE)
+        AS AVG_TRIP_DISTANCE,
+
+    SUM(TOTAL_AMOUNT)
+        AS TOTAL_REVENUE,
+
+    AVG(TOTAL_AMOUNT)
+        AS AVG_TRIP_AMOUNT,
+
+    AVG(TRIP_DURATION_MINUTES)
+        AS AVG_TRIP_DURATION_MINUTES,
+
+    AVG(SPEED_KMH)
+        AS AVG_SPEED_KMH,
+
+    AVG(TIP_RATE)
+        AS AVG_TIP_RATE,
+
+    SUM(PASSENGER_COUNT)
+        AS TOTAL_PASSENGERS
 
 FROM {{ ref('int_clean_trips') }}
 
 GROUP BY
-    pickup_location_id,
-    distance_category
-
-ORDER BY
-    pickup_location_id,
-    distance_category
+    PICKUP_LOCATION_ID,
+    DISTANCE_CATEGORY
