@@ -336,3 +336,15 @@ Il reste surtout **4 livrables** à finaliser :
 Puis une **présentation PowerPoint de 8–10 slides** pour pouvoir présenter le projet en entretien.
 
 Le plus important maintenant est de ne plus ajouter inutilement de fonctionnalités : **il faut transformer le travail technique réalisé en preuve claire de tes compétences de Data Engineer.**
+
+Pour lancer les dashboard depuis Powershell
+
+python -m streamlit run .\streamlit_app\app.py
+ Local URL: http://localhost:8501
+  Network URL: http://192.168.1.10:8501
+
+
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
